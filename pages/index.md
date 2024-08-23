@@ -1,53 +1,86 @@
 ---
-title: Welcome to Evidence
+title: End of Day Stocks Page
 ---
 
-<Details title='How to edit this page'>
-
-  This page can be found in your project at `/pages/index.md`. Make a change to the markdown file and save it to see the change take effect in your browser.
+<Details title='Explore Stocks End of Day Information'>
+  This page utitlizes end of day stock information from ThetaData
 </Details>
 
 ```sql symbols 
   select
      symbol 
-  from stocks.tickers
+  from stocks
 ```
 
-<Dropdown data={symbol} name=ticker value=symbol>
-    <DropdownOption value="%" valueLabel="All Stocks"/>
+<Dropdown data={symbols} name=ticker value=symbol title="select a ticker" defaultValue="AAPL">
 </Dropdown>
 
-<Dropdown name=year>
-    <DropdownOption value=% valueLabel="All Years"/>
-    <DropdownOption value=2020/>
-    <DropdownOption value=2021/>
-    <DropdownOption value=2022/>
-    <DropdownOption value=2023/>
-    <DropdownOption value=2024/>
-</Dropdown>
+```sql stock_desc
+  select
+    exchange, long_name, sector, industry, current_price, marketcap, ebitda, revenue_growth,
+    "description", "weight"
+  from stocks
+  where symbol = '${inputs.ticker.value}'
+```
 
-```sql orders_by_category
+## Description
+<p style="font-size: 14px;">
+{symbols[0].symbol} belongs in the {stock_desc[0].sector} sector of the {stock_desc[0].industry}. The last known market capitalization was {fmt(stock_desc[0].marketcap, '$#,##0.0,,,"B"')} with a current stock price of {fmt(stock_desc[0].current_price, '$#,##1') }. The company has an EBITDA of {fmt(stock_desc[0].ebitda, '$#,##0.0,,,"B"')} and a revenue growth of {fmt(stock_desc[0].revenue_growth, 'pct1')}.</p> 
+
+<Accordion>
+  <AccordionItem title="Company Description">
+    <p style="font-size: 14px;"> {stock_desc[0].description}</p>
+  </AccordionItem>
+</Accordion>
+
+
+## End of Day Stock Price
+```sql eod 
   select 
-      date_trunc('month', date) as month,
-  from stocks.eod
-  where symbol like '${inputs.ticker.value}'
-  and date_part('year', date) like '${inputs.year.value}'
+   open,high,low,close,volume,count, bid_size,bid_exchange,bid,ask_size,ask_exchange,ask,
+    symbol, date 
+  from eod
+  where symbol = '${inputs.ticker.value}'
 ```
 
-<!-- <BarChart
-    data={orders_by_category}
-    title="Sales by Month, {inputs.category.label}"
-    x=month
-    y=sales_usd
-    series=category
-/> -->
+```sql dates
+select 
+    distinct(date) as date
+from eod
+where symbol = '${inputs.ticker.value}'
+```
+<DateRange
+    name=range_filtering_a_query
+    data={dates}
+    dates=date
+/>
+
+```sql filtered_query
+select 
+    *
+from eod
+where date between '${inputs.range_filtering_a_query.start}' and '${inputs.range_filtering_a_query.end}'
+AND symbol = '${inputs.ticker.value}'
+```
+
+<DataTable data={filtered_query}> 
+  <Column id=open/> 
+	<Column id=high/> 
+	<Column id=low/> 
+	<Column id=close/> 
+	<Column id=volume/> 
+	<Column id=bid_size/> 
+	<Column id=bid/> 
+	<Column id=ask_size/> 
+	<Column id=ask/> 
+	<Column id=date/> 
+</DataTable>
+
+<LineChart
+    data={filtered_query}
+    x=date
+    y=close
+/>
 
 ## What's Next?
-- [Connect your data sources](settings)
-- Edit/add markdown files in the `pages` folder
 - Deploy your project with [Evidence Cloud](https://evidence.dev/cloud)
-
-## Get Support
-- Message us on [Slack](https://slack.evidence.dev/)
-- Read the [Docs](https://docs.evidence.dev/)
-- Open an issue on [Github](https://github.com/evidence-dev/evidence)
