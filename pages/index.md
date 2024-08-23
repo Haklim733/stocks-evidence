@@ -24,8 +24,8 @@ title: End of Day Stocks Page
 ```
 
 ## Description
-<p style="font-size: 14px;">
-{symbols[0].symbol} belongs in the {stock_desc[0].sector} sector of the {stock_desc[0].industry}. The last known market capitalization was {fmt(stock_desc[0].marketcap, '$#,##0.0,,,"B"')} with a current stock price of {fmt(stock_desc[0].current_price, '$#,##1') }. The company has an EBITDA of {fmt(stock_desc[0].ebitda, '$#,##0.0,,,"B"')} and a revenue growth of {fmt(stock_desc[0].revenue_growth, 'pct1')}.</p> 
+<!-- <p style="font-size: 14px;"> -->
+{inputs.ticker.value} belongs in the {stock_desc[0].sector} sector of the {stock_desc[0].industry}. The last known market capitalization was {fmt(stock_desc[0].marketcap, '$#,##0.0,,,"B"')} with a current stock price of {fmt(stock_desc[0].current_price, '$#,##1') }. The company has an EBITDA of {fmt(stock_desc[0].ebitda, '$#,##0.0,,,"B"')} and a revenue growth of {fmt(stock_desc[0].revenue_growth, 'pct1')}.
 
 <Accordion>
   <AccordionItem title="Company Description">
@@ -63,18 +63,27 @@ where date between '${inputs.range_filtering_a_query.start}' and '${inputs.range
 AND symbol = '${inputs.ticker.value}'
 ```
 
-<DataTable data={filtered_query}> 
-  <Column id=open/> 
-	<Column id=high/> 
-	<Column id=low/> 
-	<Column id=close/> 
-	<Column id=volume/> 
-	<Column id=bid_size/> 
-	<Column id=bid/> 
-	<Column id=ask_size/> 
-	<Column id=ask/> 
-	<Column id=date/> 
-</DataTable>
+```sql priceDelta
+WITH first_last AS (
+    SELECT 
+        date,
+        close,
+        FIRST_VALUE(close) OVER (PARTITION BY symbol ORDER BY date) AS first_close,
+        LAST_VALUE(close) OVER (PARTITION BY symbol ORDER BY date) AS last_close
+    FROM eod
+    WHERE symbol = '${inputs.ticker.value}'
+    AND date between '${inputs.range_filtering_a_query.start}' and '${inputs.range_filtering_a_query.end}'
+)
+SELECT 
+    last_close,
+    first_close,
+    CAST((last_close - first_close) / first_close AS DECIMAL(10, 5)) AS pct_change
+from first_last
+order by date desc
+LIMIT 1
+```
+### Price Change Over the Selected Period
+<Delta data={priceDelta} column=pct_change fmt=pct1 />
 
 <LineChart
     data={filtered_query}
@@ -82,5 +91,15 @@ AND symbol = '${inputs.ticker.value}'
     y=close
 />
 
-## What's Next?
-- Deploy your project with [Evidence Cloud](https://evidence.dev/cloud)
+<DataTable data={filtered_query}> 
+  <Column id=open fmt='$#,##0.00' /> 
+	<Column id=high fmt='$#,##0.00'/> 
+	<Column id=low fmt='$#,##0.00'/> 
+	<Column id=close fmt='$#,##0.00'/> 
+	<Column id=volume/> 
+	<Column id=bid_size/> 
+	<Column id=bid fmt='$#,##0.00'/> 
+	<Column id=ask_size/> 
+	<Column id=ask fmt='$#,##0.00'/> 
+	<Column id=date/> 
+</DataTable>
