@@ -103,3 +103,28 @@ LIMIT 1
 	<Column id=ask fmt='$#,##0.00'/> 
 	<Column id=date/> 
 </DataTable>
+
+### Price Change Comparison Over the Selected Period
+#### Select a Peer(s)
+<Dropdown
+    data={symbols} 
+    name=peers
+    value=symbol
+    title="Select peers"
+    multiple=true
+    selectAllByDefault=false
+/>
+
+```sql priceDeltaPeers
+SELECT * FROM pct_change
+WHERE symbol = '${inputs.ticker.value}' OR symbol IN ${inputs.peers.value}
+  AND date between '${inputs.range_filtering_a_query.start}' and '${inputs.range_filtering_a_query.end}'
+```
+<LineChart 
+    data={priceDeltaPeers}
+    x=date
+    y=pct_change 
+    yFmt='#,##0.0%'
+    yAxisTitle="Percent Change over Period"
+    series=symbol
+/>
