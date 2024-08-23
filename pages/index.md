@@ -135,7 +135,7 @@ WHERE symbol = '${inputs.ticker.value}' OR symbol IN ${inputs.peers.value}
 ```sql correlation
 SELECT * FROM correlations 
 WHERE symbol1 = '${inputs.ticker.value}'
-ORDER BY correlation
+ORDER BY correlation DESC
 LIMIT 10
 ```
 <Heatmap 
