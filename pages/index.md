@@ -1,9 +1,9 @@
 ---
-title: End of Day Stocks Page
+title: Explore End of Day Stocks Prices
 ---
 
-<Details title='Explore Stocks End of Day Information'>
-  This page utitlizes end of day stock information from ThetaData
+<Details title='Disclaimer'>
+  This page utitlizes end of day stock information from ThetaData. Work in progress and calculations have not yet been vetted.
 </Details>
 
 ```sql symbols 
@@ -85,6 +85,7 @@ LIMIT 1
 ### Price Change Over the Selected Period
 <Delta data={priceDelta} column=pct_change fmt=pct1 />
 
+### Stock Price
 <LineChart
     data={filtered_query}
     x=date
@@ -103,6 +104,7 @@ LIMIT 1
 	<Column id=ask fmt='$#,##0.00'/> 
 	<Column id=date/> 
 </DataTable>
+
 
 ### Price Change Comparison Over the Selected Period
 #### Select a Peer(s)
@@ -127,4 +129,19 @@ WHERE symbol = '${inputs.ticker.value}' OR symbol IN ${inputs.peers.value}
     yFmt='#,##0.0%'
     yAxisTitle="Percent Change over Period"
     series=symbol
+/>
+
+### Correlations (for percent change over entire period)
+```sql correlation
+SELECT * FROM correlations 
+WHERE symbol1 = '${inputs.ticker.value}'
+ORDER BY correlation
+LIMIT 10
+```
+<Heatmap 
+    data={correlation}
+    x=symbol1
+    y=symbol2
+    value=correlation
+    valueFmt='#0.0000'
 />
