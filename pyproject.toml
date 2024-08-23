@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "stocks-dev"
+version = "0.1.0"
+description = ""
+authors = ["leehaklim <lee.haklim@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+duckdb = "^1.0.0"
+
+
+[tool.poetry.group.notebook.dependencies]
+notebook = "^7.2.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
