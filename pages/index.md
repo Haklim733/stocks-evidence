@@ -114,7 +114,7 @@ LIMIT 1
     value=symbol
     title="Select peers"
     multiple=true
-    selectAllByDefault=false
+    disableSelectAll=true
 />
 
 ```sql priceDeltaPeers
