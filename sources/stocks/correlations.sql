@@ -48,3 +48,4 @@ correlation AS (
     ORDER BY c.symbol1, c.symbol2
 )
 SELECT * FROM correlation where symbol1 != symbol2
+ORDER BY symbol1, correlation DESC

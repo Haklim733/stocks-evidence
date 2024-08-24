@@ -3,12 +3,12 @@ title: Explore End of Day Stocks Prices
 ---
 
 <Details title='Disclaimer'>
-  This page utitlizes end of day stock information from ThetaData. Work in progress and calculations have not yet been vetted.
+  Work in progress and calculations have not yet been vetted.
 </Details>
 
 ```sql symbols 
   select
-     symbol 
+     distinct(symbol) as symbol
   from stocks
 ```
 
@@ -131,12 +131,17 @@ WHERE symbol = '${inputs.ticker.value}' OR symbol IN ${inputs.peers.value}
     series=symbol
 />
 
-### Correlations (for percent change over entire period)
+### Correlations (based on daily returns over entire period)
+Note: does not filter based on the selected period
 ```sql correlation
-SELECT * FROM correlations 
+SELECT 
+  symbol1,
+  symbol2,
+  correlation
+FROM correlations
 WHERE symbol1 = '${inputs.ticker.value}'
 ORDER BY correlation DESC
-LIMIT 10
+LIMIT 10;
 ```
 <Heatmap 
     data={correlation}
